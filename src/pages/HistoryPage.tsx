@@ -31,9 +31,9 @@ export default function HistoryPage() {
   return (
     <div className="container py-8 md:py-12">
       <div className="flex items-center justify-between mb-6">
-        <h1 className="text-2xl font-bold text-secondary">History</h1>
+        <h1 className="text-2xl font-bold text-foreground">History</h1>
         {items.length > 0 && (
-          <Button variant="outline" size="sm" onClick={handleClear} className="gap-2 text-destructive hover:text-destructive">
+          <Button variant="pill" size="sm" onClick={handleClear} className="gap-2 text-destructive hover:text-destructive">
             <Trash2 className="h-3 w-3" /> Clear All
           </Button>
         )}
@@ -47,20 +47,20 @@ export default function HistoryPage() {
       ) : (
         <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
           {items.map((item) => (
-            <div key={item.id} className="rounded-lg border border-border bg-card p-4 flex flex-col gap-3">
+            <div key={item.id} className="rounded-xl border border-border bg-card p-4 flex flex-col gap-3 hover:border-muted-foreground/30 transition-colors duration-150">
               <div className="flex items-start gap-3">
-                <img src={item.dataUrl} alt="QR" className="w-16 h-16 rounded border border-border flex-shrink-0" />
+                <img src={item.dataUrl} alt="QR" className="w-16 h-16 rounded-lg border border-border flex-shrink-0" />
                 <div className="flex-1 min-w-0">
-                  <span className="text-xs font-medium text-primary uppercase">{item.type}</span>
-                  <p className="text-sm text-foreground truncate">{item.content}</p>
+                  <span className="text-xs font-semibold text-primary uppercase tracking-wider">{item.type}</span>
+                  <p className="text-sm text-foreground truncate mt-0.5">{item.content}</p>
                   <p className="text-xs text-muted-foreground mt-1">{new Date(item.createdAt).toLocaleDateString()}</p>
                 </div>
               </div>
               <div className="flex gap-2">
-                <Button variant="outline" size="sm" className="flex-1 gap-1.5" onClick={() => handleDownload(item)}>
+                <Button variant="pill" size="sm" className="flex-1 gap-1.5" onClick={() => handleDownload(item)}>
                   <Download className="h-3 w-3" /> Download
                 </Button>
-                <Button variant="outline" size="sm" className="gap-1.5 text-destructive hover:text-destructive" onClick={() => handleDelete(item.id)}>
+                <Button variant="pill" size="sm" className="gap-1.5 text-destructive hover:text-destructive" onClick={() => handleDelete(item.id)}>
                   <Trash2 className="h-3 w-3" />
                 </Button>
               </div>

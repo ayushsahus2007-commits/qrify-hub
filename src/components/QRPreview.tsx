@@ -32,8 +32,10 @@ export default function QRPreview({ data, color, bgColor, size, onDataUrl }: QRP
   }, [data, color, bgColor, size, onDataUrl]);
 
   return (
-    <div className="flex items-center justify-center rounded-lg border border-border bg-card p-6"
-      style={{ minHeight: size + 48, minWidth: size + 48 }}>
+    <div
+      className="flex items-center justify-center rounded-xl border border-border bg-card p-6"
+      style={{ minHeight: size + 48, minWidth: size + 48 }}
+    >
       {empty ? (
         <p className="text-muted-foreground text-sm text-center">Enter data to preview QR code</p>
       ) : (
