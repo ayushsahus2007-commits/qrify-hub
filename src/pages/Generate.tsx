@@ -26,8 +26,8 @@ function buildQRData(type: QRType, fields: Record<string, string>): string {
 export default function Generate() {
   const [type, setType] = useState<QRType>("URL");
   const [fields, setFields] = useState<Record<string, string>>({ url: "" });
-  const [color, setColor] = useState("#000000");
-  const [bgColor, setBgColor] = useState("#ffffff");
+  const [color, setColor] = useState("#ffffff");
+  const [bgColor, setBgColor] = useState("#1a1a2e");
   const [size, setSize] = useState(256);
   const [dataUrl, setDataUrl] = useState("");
   const [copied, setCopied] = useState(false);
@@ -67,51 +67,51 @@ export default function Generate() {
 
   return (
     <div className="container py-8 md:py-12">
-      <h1 className="text-2xl font-bold text-secondary mb-6">Generate QR Code</h1>
+      <h1 className="text-2xl font-bold text-foreground mb-6">Generate QR Code</h1>
       <div className="grid lg:grid-cols-2 gap-8">
         {/* Left: inputs */}
         <div className="flex flex-col gap-6">
           <Tabs value={type} onValueChange={handleTypeChange}>
-            <TabsList className="w-full flex-wrap h-auto gap-1">
+            <TabsList className="w-full flex-wrap h-auto gap-1 bg-secondary p-1 rounded-xl">
               {QR_TYPES.map((t) => (
-                <TabsTrigger key={t} value={t} className="flex-1 min-w-[60px]">{t}</TabsTrigger>
+                <TabsTrigger key={t} value={t} className="flex-1 min-w-[60px] rounded-lg data-[state=active]:bg-card">{t}</TabsTrigger>
               ))}
             </TabsList>
           </Tabs>
 
-          <div className="rounded-lg border border-border bg-card p-5 flex flex-col gap-4">
+          <div className="rounded-xl border border-border bg-card p-5 flex flex-col gap-4">
             {type === "URL" && (
               <div className="flex flex-col gap-2">
                 <Label>URL</Label>
-                <Input placeholder="https://example.com" value={fields.url || ""} onChange={(e) => setField("url", e.target.value)} />
+                <Input placeholder="https://example.com" value={fields.url || ""} onChange={(e) => setField("url", e.target.value)} className="bg-background border-border" />
               </div>
             )}
             {type === "Text" && (
               <div className="flex flex-col gap-2">
                 <Label>Text</Label>
-                <Input placeholder="Enter any text" value={fields.text || ""} onChange={(e) => setField("text", e.target.value)} />
+                <Input placeholder="Enter any text" value={fields.text || ""} onChange={(e) => setField("text", e.target.value)} className="bg-background border-border" />
               </div>
             )}
             {type === "Email" && (
               <>
-                <div className="flex flex-col gap-2"><Label>Email</Label><Input placeholder="hello@example.com" value={fields.email || ""} onChange={(e) => setField("email", e.target.value)} /></div>
-                <div className="flex flex-col gap-2"><Label>Subject</Label><Input placeholder="Subject" value={fields.subject || ""} onChange={(e) => setField("subject", e.target.value)} /></div>
-                <div className="flex flex-col gap-2"><Label>Body</Label><Input placeholder="Message body" value={fields.body || ""} onChange={(e) => setField("body", e.target.value)} /></div>
+                <div className="flex flex-col gap-2"><Label>Email</Label><Input placeholder="hello@example.com" value={fields.email || ""} onChange={(e) => setField("email", e.target.value)} className="bg-background border-border" /></div>
+                <div className="flex flex-col gap-2"><Label>Subject</Label><Input placeholder="Subject" value={fields.subject || ""} onChange={(e) => setField("subject", e.target.value)} className="bg-background border-border" /></div>
+                <div className="flex flex-col gap-2"><Label>Body</Label><Input placeholder="Message body" value={fields.body || ""} onChange={(e) => setField("body", e.target.value)} className="bg-background border-border" /></div>
               </>
             )}
             {type === "Phone" && (
               <div className="flex flex-col gap-2">
                 <Label>Phone Number</Label>
-                <Input placeholder="+1234567890" value={fields.phone || ""} onChange={(e) => setField("phone", e.target.value)} />
+                <Input placeholder="+1234567890" value={fields.phone || ""} onChange={(e) => setField("phone", e.target.value)} className="bg-background border-border" />
               </div>
             )}
             {type === "WiFi" && (
               <>
-                <div className="flex flex-col gap-2"><Label>Network Name (SSID)</Label><Input placeholder="MyWiFi" value={fields.ssid || ""} onChange={(e) => setField("ssid", e.target.value)} /></div>
-                <div className="flex flex-col gap-2"><Label>Password</Label><Input type="password" placeholder="Password" value={fields.password || ""} onChange={(e) => setField("password", e.target.value)} /></div>
+                <div className="flex flex-col gap-2"><Label>Network Name (SSID)</Label><Input placeholder="MyWiFi" value={fields.ssid || ""} onChange={(e) => setField("ssid", e.target.value)} className="bg-background border-border" /></div>
+                <div className="flex flex-col gap-2"><Label>Password</Label><Input type="password" placeholder="Password" value={fields.password || ""} onChange={(e) => setField("password", e.target.value)} className="bg-background border-border" /></div>
                 <div className="flex flex-col gap-2">
                   <Label>Encryption</Label>
-                  <select className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm" value={fields.encryption || "WPA"} onChange={(e) => setField("encryption", e.target.value)}>
+                  <select className="flex h-10 w-full rounded-lg border border-border bg-background px-3 py-2 text-sm text-foreground" value={fields.encryption || "WPA"} onChange={(e) => setField("encryption", e.target.value)}>
                     <option value="WPA">WPA/WPA2</option>
                     <option value="WEP">WEP</option>
                     <option value="nopass">None</option>
@@ -122,21 +122,21 @@ export default function Generate() {
           </div>
 
           {/* Customization */}
-          <div className="rounded-lg border border-border bg-card p-5 flex flex-col gap-4">
-            <h3 className="font-semibold text-sm text-secondary">Customize</h3>
+          <div className="rounded-xl border border-border bg-card p-5 flex flex-col gap-4">
+            <h3 className="font-semibold text-sm text-foreground">Customize</h3>
             <div className="grid grid-cols-2 gap-4">
               <div className="flex flex-col gap-2">
                 <Label>QR Color</Label>
                 <div className="flex items-center gap-2">
-                  <input type="color" value={color} onChange={(e) => setColor(e.target.value)} className="h-9 w-9 rounded border border-border cursor-pointer" />
-                  <span className="text-xs text-muted-foreground">{color}</span>
+                  <input type="color" value={color} onChange={(e) => setColor(e.target.value)} className="h-9 w-9 rounded-lg border border-border cursor-pointer bg-transparent" />
+                  <span className="text-xs text-muted-foreground font-mono">{color}</span>
                 </div>
               </div>
               <div className="flex flex-col gap-2">
                 <Label>Background</Label>
                 <div className="flex items-center gap-2">
-                  <input type="color" value={bgColor} onChange={(e) => setBgColor(e.target.value)} className="h-9 w-9 rounded border border-border cursor-pointer" />
-                  <span className="text-xs text-muted-foreground">{bgColor}</span>
+                  <input type="color" value={bgColor} onChange={(e) => setBgColor(e.target.value)} className="h-9 w-9 rounded-lg border border-border cursor-pointer bg-transparent" />
+                  <span className="text-xs text-muted-foreground font-mono">{bgColor}</span>
                 </div>
               </div>
             </div>
@@ -154,7 +154,7 @@ export default function Generate() {
             <Button className="flex-1 gap-2" onClick={handleDownload} disabled={!qrData.trim()}>
               <Download className="h-4 w-4" /> Download PNG
             </Button>
-            <Button variant="outline" className="gap-2" onClick={handleCopy} disabled={!qrData.trim()}>
+            <Button variant="pill" className="gap-2" onClick={handleCopy} disabled={!qrData.trim()}>
               {copied ? <Check className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
             </Button>
           </div>

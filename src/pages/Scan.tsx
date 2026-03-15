@@ -24,7 +24,6 @@ export default function Scan() {
 
   const startCamera = useCallback(async () => {
     await stopScanner();
-    // Dynamic import to avoid SSR issues
     const { Html5Qrcode } = await import("html5-qrcode");
     const scanner = new Html5Qrcode("qr-scanner-container");
     scannerRef.current = scanner;
@@ -40,7 +39,7 @@ export default function Scan() {
         },
         () => {}
       );
-    } catch (err) {
+    } catch {
       toast.error("Could not access camera. Please allow camera permissions.");
       setScanning(false);
     }
@@ -77,19 +76,18 @@ export default function Scan() {
 
   return (
     <div className="container py-8 md:py-12 max-w-xl mx-auto">
-      <h1 className="text-2xl font-bold text-secondary mb-6">Scan QR Code</h1>
+      <h1 className="text-2xl font-bold text-foreground mb-6">Scan QR Code</h1>
 
       <div className="flex gap-2 mb-6">
-        <Button variant={mode === "camera" ? "default" : "outline"} className="flex-1 gap-2" onClick={() => { setMode("camera"); setResult(null); }}>
+        <Button variant={mode === "camera" ? "default" : "pill"} className="flex-1 gap-2" onClick={() => { setMode("camera"); setResult(null); }}>
           <Camera className="h-4 w-4" /> Camera
         </Button>
-        <Button variant={mode === "upload" ? "default" : "outline"} className="flex-1 gap-2" onClick={() => { setMode("upload"); stopScanner(); setResult(null); }}>
+        <Button variant={mode === "upload" ? "default" : "pill"} className="flex-1 gap-2" onClick={() => { setMode("upload"); stopScanner(); setResult(null); }}>
           <Upload className="h-4 w-4" /> Upload Image
         </Button>
       </div>
 
-      {/* Scanner container */}
-      <div className="rounded-lg border border-border bg-card overflow-hidden mb-6 relative" style={{ minHeight: 300 }}>
+      <div className="rounded-xl border border-border bg-card overflow-hidden mb-6 relative" style={{ minHeight: 300 }}>
         <div id="qr-scanner-container" ref={containerRef} className="w-full" />
         {scanning && (
           <div className="absolute inset-0 pointer-events-none">
@@ -108,25 +106,24 @@ export default function Scan() {
             <div className="text-center">
               <Button onClick={() => fileRef.current?.click()} className="gap-2"><Upload className="h-4 w-4" /> Select Image</Button>
               <input ref={fileRef} type="file" accept="image/*" onChange={handleFileUpload} className="hidden" />
-              <p className="text-xs text-muted-foreground mt-2">PNG, JPG, or any image with a QR code</p>
+              <p className="text-xs text-muted-foreground mt-3">PNG, JPG, or any image with a QR code</p>
             </div>
           </div>
         )}
       </div>
 
-      {/* Result */}
       {result && (
-        <div className="rounded-lg border border-accent bg-accent/10 p-5 flex flex-col gap-3">
+        <div className="rounded-xl border border-accent/30 bg-accent/5 p-5 flex flex-col gap-3">
           <div className="flex items-center justify-between">
-            <span className="text-xs font-medium text-accent uppercase tracking-wide">Decoded Result</span>
-            <Button variant="ghost" size="sm" onClick={() => { setResult(null); }} className="h-6 w-6 p-0"><X className="h-4 w-4" /></Button>
+            <span className="text-xs font-semibold text-accent uppercase tracking-wider">Decoded Result</span>
+            <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => setResult(null)}><X className="h-4 w-4" /></Button>
           </div>
-          <p className="text-sm text-foreground break-all">{result}</p>
+          <p className="text-sm text-foreground break-all font-mono bg-background rounded-lg p-3">{result}</p>
           <div className="flex gap-2">
-            <Button variant="outline" size="sm" className="gap-2" onClick={handleCopy}><Copy className="h-3 w-3" /> Copy</Button>
+            <Button variant="pill" size="sm" className="gap-2" onClick={handleCopy}><Copy className="h-3 w-3" /> Copy</Button>
             {isUrl && (
               <a href={result} target="_blank" rel="noopener noreferrer">
-                <Button variant="outline" size="sm" className="gap-2"><ExternalLink className="h-3 w-3" /> Open Link</Button>
+                <Button variant="pill" size="sm" className="gap-2"><ExternalLink className="h-3 w-3" /> Open Link</Button>
               </a>
             )}
           </div>
