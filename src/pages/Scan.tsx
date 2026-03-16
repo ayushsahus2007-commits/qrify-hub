@@ -1,7 +1,8 @@
 import { useState, useRef, useEffect, useCallback } from "react";
-import { Camera, Upload, Copy, ExternalLink, X } from "lucide-react";
+import { Camera, Upload, Copy, ExternalLink, X, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
+import { ImageUploadDragDrop } from "@/components/ui/image-upload-drag-drop";
 
 export default function Scan() {
   const [mode, setMode] = useState<"camera" | "upload">("camera");
@@ -9,9 +10,58 @@ export default function Scan() {
   const [scanning, setScanning] = useState(false);
   const scannerRef = useRef<any>(null);
   const containerRef = useRef<HTMLDivElement>(null);
-  const fileRef = useRef<HTMLInputElement>(null);
+  const [uploadedImage, setUploadedImage] = useState<File | null>(null);
+  const canvasRef = useRef<HTMLCanvasElement>(null);
+  const [processing, setProcessing] = useState(false);
 
   const isUrl = result ? /^https?:\/\//i.test(result) : false;
+
+  const handleImageSelect = useCallback((file: File | null) => {
+    setUploadedImage(file);
+    if (file) {
+      const reader = new FileReader();
+      reader.onload = async (e) => {
+        try {
+          const webhookUrl = "https://ayush1501.app.n8n.cloud/webhook/QRscan";
+          const formData = new FormData();
+          formData.append('image_input', file); // Append the file with the field name 'image_input'
+
+          setProcessing(true); // Start processing
+
+          const response = await fetch(webhookUrl, {
+            method: 'POST',
+            body: formData, // Send FormData object
+            // fetch will automatically set 'Content-Type: multipart/form-data' with the correct boundary
+          });
+
+          if (response.ok) {
+            const htmlResponse = await response.text();
+            const parser = new DOMParser();
+            const doc = parser.parseFromString(htmlResponse, 'text/html');
+            const preElement = doc.querySelector('td > pre');
+
+            if (preElement && preElement.textContent) {
+              setResult(preElement.textContent.trim());
+              toast.success("Image sent to webhook and QR code decoded!");
+            } else {
+              toast.error("Webhook response did not contain expected QR code data.");
+            }
+          } else {
+            const errorText = await response.text();
+            toast.error(`Webhook error: ${response.status} - ${errorText}`);
+          }
+        } catch (error) {
+          console.error("Error sending image to webhook:", error);
+          toast.error("Failed to send image to webhook.");
+        } finally {
+          setProcessing(false); // End processing
+        }
+      };
+      reader.readAsArrayBuffer(file); // Read as ArrayBuffer for binary sending
+    } else {
+      setResult(null);
+    }
+  }, []);
 
   const stopScanner = useCallback(async () => {
     if (scannerRef.current) {
@@ -21,6 +71,28 @@ export default function Scan() {
     }
     setScanning(false);
   }, []);
+
+  const captureFrame = useCallback(async () => {
+    if (scannerRef.current && canvasRef.current) {
+      const videoElement = document.querySelector('#qr-scanner-container video') as HTMLVideoElement;
+      const canvas = canvasRef.current;
+      const context = canvas.getContext('2d');
+
+      if (videoElement && context) {
+        canvas.width = videoElement.videoWidth;
+        canvas.height = videoElement.videoHeight;
+        context.drawImage(videoElement, 0, 0, videoElement.videoWidth, videoElement.videoHeight);
+
+        canvas.toBlob(async (blob) => {
+          if (blob) {
+            const file = new File([blob], `camera-capture-${Date.now()}.png`, { type: 'image/png' });
+            await handleImageSelect(file);
+            stopScanner(); // Stop camera after capturing and sending
+          }
+        }, 'image/png');
+      }
+    }
+  }, [handleImageSelect]);
 
   const startCamera = useCallback(async () => {
     await stopScanner();
@@ -32,11 +104,7 @@ export default function Scan() {
       await scanner.start(
         { facingMode: "environment" },
         { fps: 15, qrbox: { width: 250, height: 250 } },
-        (text) => {
-          setResult(text);
-          stopScanner();
-          toast.success("QR code detected!");
-        },
+        () => {}, // Success callback is not used directly here
         () => {}
       );
     } catch {
@@ -44,25 +112,6 @@ export default function Scan() {
       setScanning(false);
     }
   }, [stopScanner]);
-
-  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-    await stopScanner();
-    const { Html5Qrcode } = await import("html5-qrcode");
-    const scanner = new Html5Qrcode("qr-scanner-container");
-    scannerRef.current = scanner;
-    try {
-      const res = await scanner.scanFile(file, true);
-      setResult(res);
-      toast.success("QR code detected!");
-    } catch {
-      toast.error("No QR code found in the image.");
-    }
-    try { scanner.clear(); } catch {}
-    scannerRef.current = null;
-    if (fileRef.current) fileRef.current.value = "";
-  };
 
   useEffect(() => {
     return () => { stopScanner(); };
@@ -88,28 +137,37 @@ export default function Scan() {
       </div>
 
       <div className="rounded-xl border border-border bg-card overflow-hidden mb-6 relative" style={{ minHeight: 300 }}>
-        <div id="qr-scanner-container" ref={containerRef} className="w-full" />
-        {scanning && (
-          <div className="absolute inset-0 pointer-events-none">
-            <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-[250px] h-[250px] border-2 border-primary/50 rounded-lg">
-              <div className="scanner-line absolute left-0 right-0 h-0.5 bg-primary" />
-            </div>
+        {mode === "camera" && (
+          <div className="relative w-full h-full">
+            <div id="qr-scanner-container" className="w-full h-full" />
+            {scanning && (
+              <Button onClick={captureFrame} className="absolute bottom-4 left-1/2 -translate-x-1/2 gap-2">
+                <Camera className="h-4 w-4" /> Capture
+              </Button>
+            )}
+            {!scanning && !result && !processing && (
+              <div className="flex items-center justify-center h-[300px]">
+                <Button onClick={startCamera} className="gap-2"><Camera className="h-4 w-4" /> Start Camera</Button>
+              </div>
+            )}
+            {processing && (
+              <div className="flex items-center justify-center h-[300px]">
+                <Loader2 className="h-8 w-8 animate-spin text-primary" />
+              </div>
+            )}
           </div>
         )}
-        {mode === "camera" && !scanning && !result && (
+        {mode === "upload" && !result && !processing && (
           <div className="flex items-center justify-center h-[300px]">
-            <Button onClick={startCamera} className="gap-2"><Camera className="h-4 w-4" /> Start Camera</Button>
+            <ImageUploadDragDrop onImageSelect={handleImageSelect} />
           </div>
         )}
-        {mode === "upload" && !result && (
+        {mode === "upload" && processing && (
           <div className="flex items-center justify-center h-[300px]">
-            <div className="text-center">
-              <Button onClick={() => fileRef.current?.click()} className="gap-2"><Upload className="h-4 w-4" /> Select Image</Button>
-              <input ref={fileRef} type="file" accept="image/*" onChange={handleFileUpload} className="hidden" />
-              <p className="text-xs text-muted-foreground mt-3">PNG, JPG, or any image with a QR code</p>
-            </div>
+            <Loader2 className="h-8 w-8 animate-spin text-primary" />
           </div>
         )}
+        <canvas ref={canvasRef} style={{ display: 'none' }} />
       </div>
 
       {result && (

@@ -1,35 +1,27 @@
 import { useEffect, useRef, useState } from "react";
-import QRCode from "qrcode";
 
 interface QRPreviewProps {
   data: string;
   color: string;
   bgColor: string;
   size: number;
-  onDataUrl?: (url: string) => void;
 }
 
-export default function QRPreview({ data, color, bgColor, size, onDataUrl }: QRPreviewProps) {
-  const canvasRef = useRef<HTMLCanvasElement>(null);
+export default function QRPreview({ data, color, bgColor, size }: QRPreviewProps) {
+  const [qrCodeImage, setQrCodeImage] = useState<string | null>(null);
   const [empty, setEmpty] = useState(true);
 
   useEffect(() => {
     if (!data.trim()) {
       setEmpty(true);
+      setQrCodeImage(null);
       return;
     }
     setEmpty(false);
-    const canvas = canvasRef.current;
-    if (!canvas) return;
 
-    QRCode.toCanvas(canvas, data, {
-      width: size,
-      margin: 2,
-      color: { dark: color, light: bgColor },
-    }).then(() => {
-      onDataUrl?.(canvas.toDataURL("image/png"));
-    }).catch(() => setEmpty(true));
-  }, [data, color, bgColor, size, onDataUrl]);
+    const apiUrl = `https://api.qrserver.com/v1/create-qr-code/?data=${encodeURIComponent(data)}&size=${size}x${size}&color=${color.substring(1)}&bgcolor=${bgColor.substring(1)}`;
+    setQrCodeImage(apiUrl);
+  }, [data, color, bgColor, size]);
 
   return (
     <div
@@ -39,7 +31,11 @@ export default function QRPreview({ data, color, bgColor, size, onDataUrl }: QRP
       {empty ? (
         <p className="text-muted-foreground text-sm text-center">Enter data to preview QR code</p>
       ) : (
-        <canvas ref={canvasRef} className="rounded" />
+        qrCodeImage ? (
+          <img src={qrCodeImage} alt="QR Code" className="rounded" />
+        ) : (
+          <p className="text-muted-foreground text-sm text-center">Generating QR Code...</p>
+        )
       )}
     </div>
   );

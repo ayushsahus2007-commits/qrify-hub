@@ -1,4 +1,4 @@
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect } from "react";
 import { Download, Copy, Check } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -35,7 +35,14 @@ export default function Generate() {
   const setField = (key: string, val: string) => setFields((f) => ({ ...f, [key]: val }));
   const qrData = buildQRData(type, fields);
 
-  const handleDataUrl = useCallback((url: string) => setDataUrl(url), []);
+  // Construct API URL for QR code generation
+  const qrApiUrl = qrData.trim()
+    ? `https://api.qrserver.com/v1/create-qr-code/?data=${encodeURIComponent(qrData)}&size=${size}x${size}&color=${color.substring(1)}&bgcolor=${bgColor.substring(1)}`
+    : "";
+
+  useEffect(() => {
+    setDataUrl(qrApiUrl);
+  }, [qrApiUrl]);
 
   const handleTypeChange = (t: string) => {
     setType(t as QRType);
@@ -149,8 +156,8 @@ export default function Generate() {
 
         {/* Right: preview */}
         <div className="flex flex-col gap-4 lg:sticky lg:top-20 lg:self-start">
-          <QRPreview data={qrData} color={color} bgColor={bgColor} size={size} onDataUrl={handleDataUrl} />
-          <div className="flex gap-2">
+          <QRPreview data={qrData} color={color} bgColor={bgColor} size={size} />
+          <div className="flex gap-2"> 
             <Button className="flex-1 gap-2" onClick={handleDownload} disabled={!qrData.trim()}>
               <Download className="h-4 w-4" /> Download PNG
             </Button>
