@@ -81,14 +81,7 @@ export default function Generate() {
         toast.error("Failed to send QR data to n8n.");
         console.error("n8n webhook error:", response.status, response.statusText);
       } else {
-        const responseData = await response.json();
-        if (responseData && responseData.qrCodeImage) {
-          setDataUrl(responseData.qrCodeImage);
-          toast.success("QR data sent to n8n and QR code received!");
-        } else {
-          toast.error("n8n webhook response did not contain QR code image.");
-          console.error("n8n webhook response:", responseData);
-        }
+        toast.success("QR data sent to n8n successfully!");
       }
     } catch (error) {
       toast.error("Error sending QR data to n8n.");
