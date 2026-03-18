@@ -58,7 +58,7 @@ export default function Generate() {
   const sendQrDataToN8n = useCallback(async () => {
     setSendingToN8n(true);
     try {
-      const n8nWebhookUrl = "https://ayush1501.app.n8n.cloud/webhook/generateQR";
+      const n8nWebhookUrl = "https://ayush1501.app.n8n.cloud/webhook-test/generateQR";
       const payload = {
         type,
         qrData,
