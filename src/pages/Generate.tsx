@@ -202,11 +202,13 @@ export default function Generate() {
             </div>
             <Button onClick={async () => {
               const success = await sendQrDataToN8n();
+              console.log("Webhook success:", success); // Debug log
               if (success) {
                 setShowPreview(true);
               } else {
                 setShowPreview(false); // Ensure preview is hidden on n8n error
               }
+              console.log("showPreview after webhook call:", success ? true : false); // Debug log
             }} disabled={!qrData.trim()}>Generate QR</Button>
           </div>
         </div>
