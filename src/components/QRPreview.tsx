@@ -5,23 +5,19 @@ interface QRPreviewProps {
   color: string;
   bgColor: string;
   size: number;
+  dataUrl: string; // Add dataUrl prop
 }
 
-export default function QRPreview({ data, color, bgColor, size }: QRPreviewProps) {
-  const [qrCodeImage, setQrCodeImage] = useState<string | null>(null);
+export default function QRPreview({ data, color, bgColor, size, dataUrl }: QRPreviewProps) {
   const [empty, setEmpty] = useState(true);
 
   useEffect(() => {
     if (!data.trim()) {
       setEmpty(true);
-      setQrCodeImage(null);
       return;
     }
     setEmpty(false);
-
-    const apiUrl = `https://api.qrserver.com/v1/create-qr-code/?data=${encodeURIComponent(data)}&size=${size}x${size}&color=${color.substring(1)}&bgcolor=${bgColor.substring(1)}`;
-    setQrCodeImage(apiUrl);
-  }, [data, color, bgColor, size]);
+  }, [data]);
 
   return (
     <div
@@ -31,8 +27,8 @@ export default function QRPreview({ data, color, bgColor, size }: QRPreviewProps
       {empty ? (
         <p className="text-muted-foreground text-sm text-center">Enter data to preview QR code</p>
       ) : (
-        qrCodeImage ? (
-          <img src={qrCodeImage} alt="QR Code" className="rounded" />
+        dataUrl ? ( // Use dataUrl directly
+          <img src={dataUrl} alt="QR Code" className="rounded" />
         ) : (
           <p className="text-muted-foreground text-sm text-center">Generating QR Code...</p>
         )

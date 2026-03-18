@@ -81,7 +81,14 @@ export default function Generate() {
         toast.error("Failed to send QR data to n8n.");
         console.error("n8n webhook error:", response.status, response.statusText);
       } else {
-        toast.success("QR data sent to n8n successfully!");
+        const responseData = await response.json();
+        if (responseData && responseData.qrCodeImage) {
+          setDataUrl(responseData.qrCodeImage);
+          toast.success("QR data sent to n8n and QR code received!");
+        } else {
+          toast.error("n8n webhook response did not contain QR code image.");
+          console.error("n8n webhook response:", responseData);
+        }
       }
     } catch (error) {
       toast.error("Error sending QR data to n8n.");
@@ -204,7 +211,7 @@ export default function Generate() {
         {/* Right: preview */}
         <div className="flex flex-col gap-4 lg:sticky lg:top-20 lg:self-start">
           {showPreview ? (
-            <QRPreview data={qrData} color={color} bgColor={bgColor} size={size} />
+            <QRPreview data={qrData} color={color} bgColor={bgColor} size={size} dataUrl={dataUrl} />
           ) : (
             <div className="flex items-center justify-center rounded-xl border border-border bg-card p-6" style={{ minHeight: 208, minWidth: 208 }}>
               <p className="text-muted-foreground text-sm text-center">Click "Generate QR" to preview</p>
