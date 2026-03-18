@@ -32,6 +32,7 @@ export default function Generate() {
   const [dataUrl, setDataUrl] = useState("");
   const [copied, setCopied] = useState(false);
   const [sendingToN8n, setSendingToN8n] = useState(false);
+  const [showPreview, setShowPreview] = useState(false);
 
   const setField = (key: string, val: string) => setFields((f) => ({ ...f, [key]: val }));
   const qrData = buildQRData(type, fields);
@@ -44,6 +45,10 @@ export default function Generate() {
   useEffect(() => {
     setDataUrl(qrApiUrl);
   }, [qrApiUrl]);
+
+  useEffect(() => {
+    setShowPreview(false);
+  }, [type, fields]);
 
   const handleTypeChange = (t: string) => {
     setType(t as QRType);
@@ -189,12 +194,19 @@ export default function Generate() {
               <Label>Size: {size}px</Label>
               <Slider min={128} max={512} step={32} value={[size]} onValueChange={([v]) => setSize(v)} />
             </div>
+            <Button onClick={() => setShowPreview(true)} disabled={!qrData.trim()}>Generate QR</Button>
           </div>
         </div>
 
         {/* Right: preview */}
         <div className="flex flex-col gap-4 lg:sticky lg:top-20 lg:self-start">
-          <QRPreview data={qrData} color={color} bgColor={bgColor} size={size} />
+          {showPreview ? (
+            <QRPreview data={qrData} color={color} bgColor={bgColor} size={size} />
+          ) : (
+            <div className="flex items-center justify-center rounded-xl border border-border bg-card p-6" style={{ minHeight: 208, minWidth: 208 }}>
+              <p className="text-muted-foreground text-sm text-center">Click "Generate QR" to preview</p>
+            </div>
+          )}
           <div className="flex gap-2"> 
             <Button className="flex-1 gap-2" onClick={handleDownload} disabled={!qrData.trim() || sendingToN8n}>
               {sendingToN8n ? <Loader2 className="h-4 w-4 animate-spin" /> : <Download className="h-4 w-4" />} Download PNG
