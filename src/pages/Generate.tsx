@@ -55,13 +55,10 @@ export default function Generate() {
     setFields({});
   };
 
-  const handleDownload = async () => {
-    if (!dataUrl) return;
-
+  const sendQrDataToN8n = useCallback(async () => {
     setSendingToN8n(true);
     try {
-      // Send data to n8n webhook
-      const n8nWebhookUrl = "https://ayush1501.app.n8n.cloud/webhook-test/generateQR"; // Replace with your actual n8n webhook URL
+      const n8nWebhookUrl = "https://ayush1501.app.n8n.cloud/webhook-test/generateQR";
       const payload = {
         type,
         qrData,
@@ -92,6 +89,12 @@ export default function Generate() {
     } finally {
       setSendingToN8n(false);
     }
+  }, [type, qrData, color, bgColor, size, dataUrl]);
+
+  const handleDownload = async () => {
+    if (!dataUrl) return;
+
+    await sendQrDataToN8n();
 
     // Original download logic
     const a = document.createElement("a");
@@ -194,7 +197,7 @@ export default function Generate() {
               <Label>Size: {size}px</Label>
               <Slider min={128} max={512} step={32} value={[size]} onValueChange={([v]) => setSize(v)} />
             </div>
-            <Button onClick={() => setShowPreview(true)} disabled={!qrData.trim()}>Generate QR</Button>
+            <Button onClick={() => { setShowPreview(true); sendQrDataToN8n(); }} disabled={!qrData.trim()}>Generate QR</Button>
           </div>
         </div>
 
