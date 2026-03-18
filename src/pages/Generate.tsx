@@ -1,5 +1,5 @@
 import { useState, useCallback, useEffect } from "react";
-import { Download, Copy, Check } from "lucide-react";
+import { Download, Copy, Check, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -31,6 +31,7 @@ export default function Generate() {
   const [size, setSize] = useState(256);
   const [dataUrl, setDataUrl] = useState("");
   const [copied, setCopied] = useState(false);
+  const [sendingToN8n, setSendingToN8n] = useState(false);
 
   const setField = (key: string, val: string) => setFields((f) => ({ ...f, [key]: val }));
   const qrData = buildQRData(type, fields);
@@ -49,8 +50,45 @@ export default function Generate() {
     setFields({});
   };
 
-  const handleDownload = () => {
+  const handleDownload = async () => {
     if (!dataUrl) return;
+
+    setSendingToN8n(true);
+    try {
+      // Send data to n8n webhook
+      const n8nWebhookUrl = "YOUR_N8N_WEBHOOK_URL"; // Replace with your actual n8n webhook URL
+      const payload = {
+        type,
+        qrData,
+        color,
+        bgColor,
+        size,
+        dataUrl,
+        timestamp: new Date().toISOString(),
+      };
+
+      const response = await fetch(n8nWebhookUrl, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(payload),
+      });
+
+      if (!response.ok) {
+        toast.error("Failed to send QR data to n8n.");
+        console.error("n8n webhook error:", response.status, response.statusText);
+      } else {
+        toast.success("QR data sent to n8n successfully!");
+      }
+    } catch (error) {
+      toast.error("Error sending QR data to n8n.");
+      console.error("Error during n8n webhook call:", error);
+    } finally {
+      setSendingToN8n(false);
+    }
+
+    // Original download logic
     const a = document.createElement("a");
     a.href = dataUrl;
     a.download = `qrify-${type.toLowerCase()}-${Date.now()}.png`;
@@ -158,8 +196,8 @@ export default function Generate() {
         <div className="flex flex-col gap-4 lg:sticky lg:top-20 lg:self-start">
           <QRPreview data={qrData} color={color} bgColor={bgColor} size={size} />
           <div className="flex gap-2"> 
-            <Button className="flex-1 gap-2" onClick={handleDownload} disabled={!qrData.trim()}>
-              <Download className="h-4 w-4" /> Download PNG
+            <Button className="flex-1 gap-2" onClick={handleDownload} disabled={!qrData.trim() || sendingToN8n}>
+              {sendingToN8n ? <Loader2 className="h-4 w-4 animate-spin" /> : <Download className="h-4 w-4" />} Download PNG
             </Button>
             <Button variant="pill" className="gap-2" onClick={handleCopy} disabled={!qrData.trim()}>
               {copied ? <Check className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
