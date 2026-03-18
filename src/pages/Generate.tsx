@@ -55,7 +55,7 @@ export default function Generate() {
     setFields({});
   };
 
-  const sendQrDataToN8n = useCallback(async () => {
+  const sendQrDataToN8n = useCallback(async (): Promise<boolean> => {
     setSendingToN8n(true);
     try {
       const n8nWebhookUrl = "https://ayush1501.app.n8n.cloud/webhook-test/generateQR";
@@ -80,12 +80,15 @@ export default function Generate() {
       if (!response.ok) {
         toast.error("Failed to send QR data to n8n.");
         console.error("n8n webhook error:", response.status, response.statusText);
+        return false;
       } else {
         toast.success("QR data sent to n8n successfully!");
+        return true;
       }
     } catch (error) {
       toast.error("Error sending QR data to n8n.");
       console.error("Error during n8n webhook call:", error);
+      return false;
     } finally {
       setSendingToN8n(false);
     }
@@ -197,7 +200,14 @@ export default function Generate() {
               <Label>Size: {size}px</Label>
               <Slider min={128} max={512} step={32} value={[size]} onValueChange={([v]) => setSize(v)} />
             </div>
-            <Button onClick={() => { setShowPreview(true); sendQrDataToN8n(); }} disabled={!qrData.trim()}>Generate QR</Button>
+            <Button onClick={async () => {
+              const success = await sendQrDataToN8n();
+              if (success) {
+                setShowPreview(true);
+              } else {
+                setShowPreview(false); // Ensure preview is hidden on n8n error
+              }
+            }} disabled={!qrData.trim()}>Generate QR</Button>
           </div>
         </div>
 
