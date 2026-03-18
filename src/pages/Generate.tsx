@@ -56,7 +56,7 @@ export default function Generate() {
     setSendingToN8n(true);
     try {
       // Send data to n8n webhook
-      const n8nWebhookUrl = "https://ayush1501.app.n8n.cloud/webhook/09d79e12-fecd-4f75-bead-9c1e639bc9c2"; // Replace with your actual n8n webhook URL
+      const n8nWebhookUrl = "https://ayush1501.app.n8n.cloud/webhook-test/generateQR"; // Replace with your actual n8n webhook URL
       const payload = {
         type,
         qrData,
