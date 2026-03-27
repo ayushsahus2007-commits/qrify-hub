@@ -31,6 +31,7 @@ export default function Auth() {
         const { error } = await supabase.auth.signUp({ email, password });
         if (error) throw error;
         toast.success("Sign-up successful! Check your email to confirm.");
+        navigate("/"); // Redirect to home after successful sign-up (user might still need to confirm email)
       } else {
         const { error } = await supabase.auth.signInWithPassword({ email, password });
         if (error) throw error;
