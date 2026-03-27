@@ -29,18 +29,24 @@ export default function Auth() {
 
     try {
       if (isSignUp) {
-        const { error } = await supabase.auth.signUp({ email, password });
+        const { data, error } = await supabase.auth.signUp({ email, password });
         if (error) {
-          if (error.message.includes("already registered")) {
-            toast.error("Email already exists. Please sign in.");
+          if (error.message.toLowerCase().includes("already")) {
+            toast.error("This email is already registered. Please sign in.");
+            setIsSignUp(false);
           } else {
             throw error;
           }
         } else {
-          toast.success("Confirmation email sent! Please check your email and then sign in.");
-          setIsSignUp(false); // Switch to sign-in form
-          setShowConfirmationMessage(true); // Show confirmation message
-          console.log("showConfirmationMessage set to true"); // Debug log
+          const isAlreadyRegistered = (data.user?.identities?.length ?? 0) === 0;
+          if (isAlreadyRegistered) {
+            toast.error("This email is already registered. Please sign in.");
+            setIsSignUp(false);
+          } else {
+            toast.success("Confirmation email sent! Please check your email and then sign in.");
+            setIsSignUp(false);
+            setShowConfirmationMessage(true);
+          }
         }
       } else {
         const { error } = await supabase.auth.signInWithPassword({ email, password });
@@ -48,9 +54,9 @@ export default function Auth() {
         toast.success("Sign-in successful!");
         navigate("/"); // Redirect to home after successful sign-in
       }
-    } catch (error: any) {
-      console.error(error); // Debug log for Supabase errors
-      toast.error(error.message);
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : "Authentication failed";
+      toast.error(message);
     } finally {
       setLoading(false);
     }
