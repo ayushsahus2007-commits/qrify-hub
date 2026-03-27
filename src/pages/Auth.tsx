@@ -28,7 +28,7 @@ export default function Auth() {
 
     try {
       if (isSignUp) {
-        const { error } = await supabase.auth.signUp({ email, password });
+        const { data, error } = await supabase.auth.signUp({ email, password });
         if (error) {
           if (error.message.includes("already registered")) {
             toast.error("Email already exists. Please sign in.");
@@ -36,8 +36,13 @@ export default function Auth() {
             throw error;
           }
         } else {
-          toast.success("Sign-up successful! Please check your email to confirm your account.");
-          navigate("/"); // Redirect to home after successful sign-up (user might still need to confirm email)
+          if (data.session) {
+            toast.success("Sign-up successful! Redirecting to home.");
+            navigate("/");
+          } else {
+            toast.success("Sign-up successful! Please check your email to confirm your account.");
+            // No immediate redirect if session is not available (email confirmation likely active)
+          }
         }
       } else {
         const { error } = await supabase.auth.signInWithPassword({ email, password });
