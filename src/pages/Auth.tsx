@@ -13,6 +13,7 @@ export default function Auth() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
+  const [showConfirmationMessage, setShowConfirmationMessage] = useState(false); // New state
   const navigate = useNavigate();
   const { session } = useSession();
 
@@ -28,7 +29,7 @@ export default function Auth() {
 
     try {
       if (isSignUp) {
-        const { data, error } = await supabase.auth.signUp({ email, password });
+        const { error } = await supabase.auth.signUp({ email, password });
         if (error) {
           if (error.message.includes("already registered")) {
             toast.error("Email already exists. Please sign in.");
@@ -38,7 +39,7 @@ export default function Auth() {
         } else {
           toast.success("Confirmation email sent! Please check your email and then sign in.");
           setIsSignUp(false); // Switch to sign-in form
-          // No immediate redirect to home, user needs to confirm email and then sign in
+          setShowConfirmationMessage(true); // Show confirmation message
         }
       } else {
         const { error } = await supabase.auth.signInWithPassword({ email, password });
@@ -53,6 +54,27 @@ export default function Auth() {
       setLoading(false);
     }
   };
+
+  if (showConfirmationMessage) {
+    return (
+      <div className="flex items-center justify-center min-h-screen bg-background">
+        <Card className="w-full max-w-md text-center">
+          <CardHeader>
+            <CardTitle>Confirm Your Email</CardTitle>
+            <CardDescription>
+              A confirmation email has been sent to <strong>{email}</strong>.
+              Please check your inbox and click the link to activate your account.
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <Button onClick={() => { setShowConfirmationMessage(false); setEmail(""); setPassword(""); }} className="w-full">
+              Back to Sign In
+            </Button>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
 
   return (
     <div className="flex items-center justify-center min-h-screen bg-background">
