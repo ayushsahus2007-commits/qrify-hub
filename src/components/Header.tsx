@@ -65,9 +65,17 @@ export default function Header() {
             </Link>
           ))}
           {session ? (
-            <Button variant="ghost" size="sm" className="gap-2 text-sm" onClick={handleSignOut}>
-              <LogOut className="h-4 w-4" /> Sign Out
-            </Button>
+            <>
+              <div className="flex items-center gap-2 text-sm">
+                <div className="h-7 w-7 rounded-full bg-primary flex items-center justify-center text-primary-foreground font-bold">
+                  {session.user?.email ? session.user.email[0].toUpperCase() : "?"}
+                </div>
+                <span>{session.user?.email}</span>
+              </div>
+              <Button variant="ghost" size="sm" className="gap-2 text-sm" onClick={handleSignOut}>
+                <LogOut className="h-4 w-4" /> Sign Out
+              </Button>
+            </>
           ) : (
             <Link to="/auth">
               <Button
