@@ -66,7 +66,15 @@ export default function Auth() {
         }
       } else {
         const { error } = await supabase.auth.signInWithPassword({ email, password });
-        if (error) throw error;
+        if (error) {
+          if (error.message.toLowerCase().includes("invalid login credentials")) {
+            toast.error("Email does not exist. Please sign up first.");
+            clearCredentials();
+          } else {
+            throw error;
+          }
+          return;
+        }
         toast.success("Sign-in successful!");
         navigate("/"); // Redirect to home after successful sign-in
       }
