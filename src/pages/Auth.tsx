@@ -18,6 +18,7 @@ export default function Auth() {
   const [showPassword, setShowPassword] = useState(false);
   const navigate = useNavigate();
   const { session } = useSession();
+  const RATE_LIMIT_MESSAGE = "Too many attempts right now. Please wait a minute and try again.";
 
   const clearCredentials = () => {
     setEmail("");
@@ -45,6 +46,11 @@ export default function Auth() {
       if (isSignUp) {
         const { data, error } = await supabase.auth.signUp({ email, password });
         if (error) {
+          const errorStatus = (error as { status?: number }).status;
+          if (errorStatus === 429 || error.message.toLowerCase().includes("rate")) {
+            toast.error(RATE_LIMIT_MESSAGE);
+            return;
+          }
           if (error.message.toLowerCase().includes("already")) {
             toast.error("This email is already registered. Please sign in.");
             setIsSignUp(false);
@@ -67,6 +73,11 @@ export default function Auth() {
       } else {
         const { error } = await supabase.auth.signInWithPassword({ email, password });
         if (error) {
+          const errorStatus = (error as { status?: number }).status;
+          if (errorStatus === 429 || error.message.toLowerCase().includes("rate")) {
+            toast.error(RATE_LIMIT_MESSAGE);
+            return;
+          }
           if (error.message.toLowerCase().includes("invalid login credentials")) {
             toast.error("Email does not exist. Please sign up first.");
             clearCredentials();
