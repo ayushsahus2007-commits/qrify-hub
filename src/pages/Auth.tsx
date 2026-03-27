@@ -40,6 +40,7 @@ export default function Auth() {
           toast.success("Confirmation email sent! Please check your email and then sign in.");
           setIsSignUp(false); // Switch to sign-in form
           setShowConfirmationMessage(true); // Show confirmation message
+          console.log("showConfirmationMessage set to true"); // Debug log
         }
       } else {
         const { error } = await supabase.auth.signInWithPassword({ email, password });
