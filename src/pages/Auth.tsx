@@ -36,13 +36,9 @@ export default function Auth() {
             throw error;
           }
         } else {
-          if (data.session) {
-            toast.success("Sign-up successful! Redirecting to home.");
-            navigate("/");
-          } else {
-            toast.success("Sign-up successful! Please check your email to confirm your account.");
-            // No immediate redirect if session is not available (email confirmation likely active)
-          }
+          toast.success("Confirmation email sent! Please check your email and then sign in.");
+          setIsSignUp(false); // Switch to sign-in form
+          // No immediate redirect to home, user needs to confirm email and then sign in
         }
       } else {
         const { error } = await supabase.auth.signInWithPassword({ email, password });
