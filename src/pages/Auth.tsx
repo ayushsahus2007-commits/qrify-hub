@@ -36,7 +36,7 @@ export default function Auth() {
             throw error;
           }
         } else {
-          toast.success("Sign-up successful! Check your email to confirm.");
+          toast.success("Sign-up successful! Please check your email to confirm your account.");
           navigate("/"); // Redirect to home after successful sign-up (user might still need to confirm email)
         }
       } else {
