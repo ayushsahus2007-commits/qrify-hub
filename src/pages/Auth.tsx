@@ -46,6 +46,7 @@ export default function Auth() {
         navigate("/"); // Redirect to home after successful sign-in
       }
     } catch (error: any) {
+      console.error(error); // Debug log for Supabase errors
       toast.error(error.message);
     } finally {
       setLoading(false);
