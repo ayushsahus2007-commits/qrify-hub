@@ -16,6 +16,7 @@ export default function Auth() {
   const [loading, setLoading] = useState(false);
   const [showConfirmationMessage, setShowConfirmationMessage] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
+  const [authMessage, setAuthMessage] = useState("");
   const navigate = useNavigate();
   const { session } = useSession();
   const RATE_LIMIT_MESSAGE = "Too many attempts right now. Please wait a minute and try again.";
@@ -29,6 +30,7 @@ export default function Auth() {
   const handleModeSwitch = () => {
     setIsSignUp((prev) => !prev);
     setShowConfirmationMessage(false);
+    setAuthMessage("");
     clearCredentials();
   };
 
@@ -40,6 +42,7 @@ export default function Auth() {
 
   const handleAuth = async (e: React.FormEvent) => {
     e.preventDefault();
+    setAuthMessage("");
     setLoading(true);
 
     try {
@@ -48,10 +51,12 @@ export default function Auth() {
         if (error) {
           const errorStatus = (error as { status?: number }).status;
           if (errorStatus === 429 || error.message.toLowerCase().includes("rate")) {
+            setAuthMessage(RATE_LIMIT_MESSAGE);
             toast.error(RATE_LIMIT_MESSAGE);
             return;
           }
           if (error.message.toLowerCase().includes("already")) {
+            setAuthMessage("This email is already registered. Please sign in.");
             toast.error("This email is already registered. Please sign in.");
             setIsSignUp(false);
             clearCredentials();
@@ -61,6 +66,7 @@ export default function Auth() {
         } else {
           const isAlreadyRegistered = (data.user?.identities?.length ?? 0) === 0;
           if (isAlreadyRegistered) {
+            setAuthMessage("This email is already registered. Please sign in.");
             toast.error("This email is already registered. Please sign in.");
             setIsSignUp(false);
             clearCredentials();
@@ -75,10 +81,12 @@ export default function Auth() {
         if (error) {
           const errorStatus = (error as { status?: number }).status;
           if (errorStatus === 429 || error.message.toLowerCase().includes("rate")) {
+            setAuthMessage(RATE_LIMIT_MESSAGE);
             toast.error(RATE_LIMIT_MESSAGE);
             return;
           }
           if (error.message.toLowerCase().includes("invalid login credentials")) {
+            setAuthMessage("Email does not exist. Please sign up first.");
             toast.error("Email does not exist. Please sign up first.");
             clearCredentials();
           } else {
@@ -91,6 +99,7 @@ export default function Auth() {
       }
     } catch (error: unknown) {
       const message = error instanceof Error ? error.message : "Authentication failed";
+      setAuthMessage(message);
       toast.error(message);
     } finally {
       setLoading(false);
@@ -163,6 +172,11 @@ export default function Auth() {
             <Button type="submit" className="w-full" disabled={loading}>
               {loading ? "Loading..." : isSignUp ? "Sign Up" : "Sign In"}
             </Button>
+            {authMessage ? (
+              <div className="rounded-md border border-border bg-muted px-3 py-2 text-sm text-foreground">
+                {authMessage}
+              </div>
+            ) : null}
           </form>
           <div className="mt-4 text-center text-sm">
             {isSignUp ? "Already have an account?" : "Don't have an account?"}{" "}
