@@ -7,15 +7,29 @@ import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { toast } from "sonner";
 import { useSession } from "@/components/SessionProvider";
+import { Eye, EyeOff } from "lucide-react";
 
 export default function Auth() {
   const [isSignUp, setIsSignUp] = useState(false);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
-  const [showConfirmationMessage, setShowConfirmationMessage] = useState(false); // New state
+  const [showConfirmationMessage, setShowConfirmationMessage] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
   const navigate = useNavigate();
   const { session } = useSession();
+
+  const clearCredentials = () => {
+    setEmail("");
+    setPassword("");
+    setShowPassword(false);
+  };
+
+  const handleModeSwitch = () => {
+    setIsSignUp((prev) => !prev);
+    setShowConfirmationMessage(false);
+    clearCredentials();
+  };
 
   useEffect(() => {
     if (session) {
@@ -34,6 +48,7 @@ export default function Auth() {
           if (error.message.toLowerCase().includes("already")) {
             toast.error("This email is already registered. Please sign in.");
             setIsSignUp(false);
+            clearCredentials();
           } else {
             throw error;
           }
@@ -42,6 +57,7 @@ export default function Auth() {
           if (isAlreadyRegistered) {
             toast.error("This email is already registered. Please sign in.");
             setIsSignUp(false);
+            clearCredentials();
           } else {
             toast.success("Confirmation email sent! Please check your email and then sign in.");
             setIsSignUp(false);
@@ -74,7 +90,7 @@ export default function Auth() {
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <Button onClick={() => { setShowConfirmationMessage(false); setEmail(""); setPassword(""); }} className="w-full">
+            <Button onClick={() => { setShowConfirmationMessage(false); clearCredentials(); }} className="w-full">
               Back to Sign In
             </Button>
           </CardContent>
@@ -107,13 +123,23 @@ export default function Auth() {
             </div>
             <div className="space-y-2">
               <Label htmlFor="password">Password</Label>
-              <Input
-                id="password"
-                type="password"
-                required
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-              />
+              <div className="relative">
+                <Input
+                  id="password"
+                  type={showPassword ? "text" : "password"}
+                  required
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  className="pr-10"
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword((prev) => !prev)}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground"
+                >
+                  {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                </button>
+              </div>
             </div>
             <Button type="submit" className="w-full" disabled={loading}>
               {loading ? "Loading..." : isSignUp ? "Sign Up" : "Sign In"}
@@ -121,7 +147,7 @@ export default function Auth() {
           </form>
           <div className="mt-4 text-center text-sm">
             {isSignUp ? "Already have an account?" : "Don't have an account?"}{" "}
-            <Button variant="link" onClick={() => setIsSignUp(!isSignUp)} className="p-0 h-auto">
+            <Button variant="link" onClick={handleModeSwitch} className="p-0 h-auto">
               {isSignUp ? "Sign In" : "Sign Up"}
             </Button>
           </div>
