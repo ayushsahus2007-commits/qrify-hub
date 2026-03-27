@@ -29,9 +29,16 @@ export default function Auth() {
     try {
       if (isSignUp) {
         const { error } = await supabase.auth.signUp({ email, password });
-        if (error) throw error;
-        toast.success("Sign-up successful! Check your email to confirm.");
-        navigate("/"); // Redirect to home after successful sign-up (user might still need to confirm email)
+        if (error) {
+          if (error.message.includes("already registered")) {
+            toast.error("Email already exists. Please sign in.");
+          } else {
+            throw error;
+          }
+        } else {
+          toast.success("Sign-up successful! Check your email to confirm.");
+          navigate("/"); // Redirect to home after successful sign-up (user might still need to confirm email)
+        }
       } else {
         const { error } = await supabase.auth.signInWithPassword({ email, password });
         if (error) throw error;
