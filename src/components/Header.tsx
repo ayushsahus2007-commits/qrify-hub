@@ -1,7 +1,9 @@
-import { Link, useLocation } from "react-router-dom";
-import { QrCode, ScanLine, History, Menu, X } from "lucide-react";
-import { useState } from "react";
+import { Link, useLocation, useNavigate } from "react-router-dom";
+import { QrCode, ScanLine, History, Menu, X, LogOut } from "lucide-react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
+import { supabase } from "@/lib/supabase";
+import { toast } from "sonner";
 
 const navItems = [
   { to: "/generate", label: "Generate", icon: QrCode },
@@ -11,7 +13,33 @@ const navItems = [
 
 export default function Header() {
   const location = useLocation();
+  const navigate = useNavigate();
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [session, setSession] = useState<any>(null); // State to hold user session
+
+  useEffect(() => {
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setSession(session);
+    });
+
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((_event, session) => {
+      setSession(session);
+    });
+
+    return () => subscription.unsubscribe();
+  }, []);
+
+  const handleSignOut = async () => {
+    const { error } = await supabase.auth.signOut();
+    if (error) {
+      toast.error(error.message);
+    } else {
+      toast.success("Signed out successfully!");
+      navigate("/auth"); // Redirect to auth page after sign out
+    }
+  };
 
   return (
     <header className="sticky top-0 z-50 border-b border-border bg-background/80 backdrop-blur-xl">
@@ -36,6 +64,21 @@ export default function Header() {
               </Button>
             </Link>
           ))}
+          {session ? (
+            <Button variant="ghost" size="sm" className="gap-2 text-sm" onClick={handleSignOut}>
+              <LogOut className="h-4 w-4" /> Sign Out
+            </Button>
+          ) : (
+            <Link to="/auth">
+              <Button
+                variant={location.pathname === "/auth" ? "secondary" : "ghost"}
+                size="sm"
+                className="gap-2 text-sm"
+              >
+                Sign In
+              </Button>
+            </Link>
+          )}
         </nav>
 
         <Button
@@ -62,6 +105,21 @@ export default function Header() {
               </Button>
             </Link>
           ))}
+          {session ? (
+            <Button variant="ghost" size="sm" className="w-full justify-start gap-2" onClick={() => { handleSignOut(); setMobileOpen(false); }}>
+              <LogOut className="h-4 w-4" /> Sign Out
+            </Button>
+          ) : (
+            <Link to="/auth" onClick={() => setMobileOpen(false)}>
+              <Button
+                variant={location.pathname === "/auth" ? "secondary" : "ghost"}
+                size="sm"
+                className="w-full justify-start gap-2"
+              >
+                Sign In
+              </Button>
+            </Link>
+          )}
         </nav>
       )}
     </header>
